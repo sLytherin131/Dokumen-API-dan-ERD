@@ -1,0 +1,322 @@
+openapi: 3.0.0
+info:
+  title: Penyewaan Mobil API
+  description: API untuk aplikasi penyewaan mobil, dengan fitur autentikasi, manajemen pengguna, mobil, penyewaan, dan pembayaran.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+paths:
+  /register:
+    post:
+      summary: Register a new user
+      description: Menambahkan user baru dengan role 'customer'.
+      operationId: registerUser
+      tags:
+        - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                  description: Full name of the user
+                email:
+                  type: string
+                  format: email
+                  description: Email address of the user
+                password:
+                  type: string
+                  description: Password of the user
+                phone:
+                  type: string
+                  description: Phone number of the user
+      responses:
+        '200':
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /login:
+    post:
+      summary: Login a user
+      description: Autentikasi user dan menghasilkan JWT token.
+      operationId: loginUser
+      tags:
+        - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email address of the user
+                password:
+                  type: string
+                  description: Password of the user
+      responses:
+        '200':
+          description: JWT token generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT token
+                  role:
+                    type: string
+                    description: Role of the user
+
+  /users:
+    get:
+      summary: Get all users
+      description: Mengambil semua data user.
+      operationId: getUsers
+      tags:
+        - Users
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+  /users/{id}:
+    get:
+      summary: Get user by ID
+      description: Mengambil data user berdasarkan ID.
+      operationId: getUser
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: User ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /users/me:
+    get:
+      summary: Get current logged-in user
+      description: Mengambil data user yang sedang login berdasarkan token JWT.
+      operationId: getMe
+      tags:
+        - Users
+      responses:
+        '200':
+          description: Current logged-in user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /cars:
+    get:
+      summary: Get all cars
+      description: Mengambil semua data mobil yang tersedia untuk disewa.
+      operationId: getCars
+      tags:
+        - Cars
+      responses:
+        '200':
+          description: List of cars
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Car'
+
+  /cars/{id}:
+    get:
+      summary: Get car by ID
+      description: Mengambil data mobil berdasarkan ID.
+      operationId: getCar
+      tags:
+        - Cars
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Car ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Car data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+
+  /rentals:
+    post:
+      summary: Create a new rental
+      description: Membuat penyewaan mobil baru.
+      operationId: createRental
+      tags:
+        - Rentals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                  description: User ID
+                car_id:
+                  type: integer
+                  description: Car ID
+                start_date:
+                  type: string
+                  format: date-time
+                  description: Rental start date
+                end_date:
+                  type: string
+                  format: date-time
+                  description: Rental end date
+      responses:
+        '200':
+          description: Rental successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rental'
+
+  /payments:
+    post:
+      summary: Create a new payment
+      description: Membuat pembayaran untuk penyewaan.
+      operationId: createPayment
+      tags:
+        - Payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rental_id:
+                  type: integer
+                  description: Rental ID
+                amount:
+                  type: number
+                  format: float
+                  description: Payment amount
+                payment_method:
+                  type: string
+                  description: Payment method
+      responses:
+        '200':
+          description: Payment successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        full_name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    Car:
+      type: object
+      properties:
+        id:
+          type: integer
+        brand:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+        license_plate:
+          type: string
+        price_per_day:
+          type: number
+          format: float
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    Rental:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        car_id:
+          type: integer
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        total_price:
+          type: number
+          format: float
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+        rental_id:
+          type: integer
+        amount:
+          type: number
+          format: float
+        payment_method:
+          type: string
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
